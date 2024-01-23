@@ -1,4 +1,5 @@
 import create from "zustand";
+import { generateId } from "../helpers";
 
 //discrabe types
 interface Task {
@@ -18,15 +19,33 @@ export const useToDoStore = create<ToDoStore>((set, get) => ({
   tasks: [
     {
       id: "abc",
-      title: "ttt",
+      title: "Default task",
       createdAt: 111,
     },
   ],
   //Methods
   createTask: (title) => {
     const { tasks } = get();
-    const newTask = {};
+    const newTask = {
+      id: generateId(),
+      title,
+      createdAt: Date.now(),
+    };
+    set({ tasks: [newTask].concat(tasks) }); //create new arr without mutation
   },
-  updateTask: (id, title) => {},
-  removeTask: (id) => {},
+  updateTask: (id: string, title: string) => {
+    const { tasks } = get();
+    set({
+      tasks: tasks.map((task) => ({
+        ...task,
+        title: task.id === id ? title : task.title,
+      })),
+    });
+  },
+  removeTask: (id: string) => {
+    const { tasks } = get();
+    set({
+      tasks: tasks.filter((task) => task.id !== id),
+    });
+  },
 }));
