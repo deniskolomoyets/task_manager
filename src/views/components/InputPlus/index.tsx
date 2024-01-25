@@ -10,7 +10,7 @@ export const InputPlus: React.FC<InputePlusProps> = ({ onAdd }) => {
   const addTask = React.useCallback(() => {
     onAdd(inputValue);
     setInputValue("");
-  }, [inputValue]); //usecallback is used so that a new function is not created during re-rendering
+  }, [inputValue, onAdd]); //usecallback is used so that a new function is not created during re-rendering
 
   return (
     <div className={styles.inputPlus}>
@@ -26,6 +26,7 @@ export const InputPlus: React.FC<InputePlusProps> = ({ onAdd }) => {
             addTask();
           }
         }}
+        placeholder="Type"
       />
       <button
         onClick={addTask}

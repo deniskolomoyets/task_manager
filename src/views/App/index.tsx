@@ -22,7 +22,9 @@ export const App: React.FC = () => {
           }}
         />
       </section>
-      <section className={styles.articleSection}></section>
+      <section className={styles.articleSection}>
+        {!tasks.length && <p className={styles.articleText}>Let's Start!</p>}
+      </section>
     </article>
   );
 };
