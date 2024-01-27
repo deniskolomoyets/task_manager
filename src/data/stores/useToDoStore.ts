@@ -1,13 +1,12 @@
-import { create } from "zustand";
+import { create, State, StateCreator } from "zustand";
 import { generateId } from "../helpers";
+// import { config } from "process";
 
-//discrabe types
 interface Task {
   id: string;
   title: string;
   createdAt: number;
 }
-
 interface ToDoStore {
   tasks: Task[];
   createTask: (title: string) => void;
@@ -15,42 +14,65 @@ interface ToDoStore {
   removeTask: (id: string) => void;
 }
 
-export const useToDoStore = create<ToDoStore>((set, get) => ({
-  tasks: [
-    {
-      id: "abc",
-      title: "Default task",
-      createdAt: 111,
+function isToDoStore(object: unknown): object is ToDoStore {
+  return typeof object === "object" && object !== null && "tasks" in object;
+} //
+const localStorageUpdate =
+  <T extends State>(config: StateCreator<T>): StateCreator<T> =>
+  (set, get, api) =>
+    config(
+      (nextState, ...args) => {
+        if (isToDoStore(nextState)) {
+          window.localStorage.setItem("tasks", JSON.stringify(nextState.tasks));
+        }
+        set(nextState, ...args);
+      },
+      get,
+      api
+    );
+
+const getCurrentState = () => {
+  try {
+    const currentState = JSON.parse(
+      window.localStorage.getItem("tasks") || "[]"
+    ) as Task[];
+    console.log(currentState);
+    return currentState;
+  } catch (err) {
+    window.localStorage.setItem("tasks", "[]");
+  }
+
+  return [];
+};
+
+export const useToDoStore = create<ToDoStore>(
+  localStorageUpdate((set, get) => ({
+    tasks: getCurrentState(),
+    createTask: (title) => {
+      const { tasks } = get();
+      const newTask = {
+        id: generateId(),
+        title,
+        createdAt: Date.now(),
+      };
+      set({
+        tasks: [newTask].concat(tasks),
+      });
     },
-    {
-      id: "abcd",
-      title: "Default task two",
-      createdAt: 112,
+    updateTask: (id: string, title: string) => {
+      const { tasks } = get();
+      set({
+        tasks: tasks.map((task) => ({
+          ...task,
+          title: task.id === id ? title : task.title,
+        })),
+      });
     },
-  ],
-  //Methods
-  createTask: (title) => {
-    const { tasks } = get();
-    const newTask = {
-      id: generateId(),
-      title,
-      createdAt: Date.now(),
-    };
-    set({ tasks: [newTask].concat(tasks) }); //create new arr without mutation
-  },
-  updateTask: (id: string, title: string) => {
-    const { tasks } = get();
-    set({
-      tasks: tasks.map((task) => ({
-        ...task,
-        title: task.id === id ? title : task.title,
-      })),
-    });
-  },
-  removeTask: (id: string) => {
-    const { tasks } = get();
-    set({
-      tasks: tasks.filter((task) => task.id !== id),
-    });
-  },
-}));
+    removeTask: (id: string) => {
+      const { tasks } = get();
+      set({
+        tasks: tasks.filter((task) => task.id !== id),
+      });
+    },
+  }))
+);
