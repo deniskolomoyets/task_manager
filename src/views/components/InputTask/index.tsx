@@ -18,7 +18,7 @@ export const InputTask: React.FC<InputeTaskProps> = ({
   const [checked, setChecked] = React.useState(false);
   return (
     <div className={styles.inputTask}>
-      <label>
+      <label className={styles.inputTaskLabel}>
         <input
           type="checkbox"
           checked={checked}
