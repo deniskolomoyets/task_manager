@@ -16,7 +16,8 @@ interface ToDoStore {
 
 function isToDoStore(object: unknown): object is ToDoStore {
   return typeof object === "object" && object !== null && "tasks" in object;
-} //
+} //instead of type 'any'
+
 const localStorageUpdate =
   <T extends State>(config: StateCreator<T>): StateCreator<T> =>
   (set, get, api) =>
